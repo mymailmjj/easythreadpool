@@ -4,18 +4,18 @@ public interface Queue<U> {
 	
 	/**
 	 * 头部加入的接口
+	 * 
 	 * @param u
 	 */
 	public void addFirst(U u);
 	
-	
 	/**
 	 * 尾部加入的接口
+	 * 
 	 * @param u
 	 */
 	public void addLast(U u);
 
-	
 	
 	/**
 	 * 拉出头部元素 
