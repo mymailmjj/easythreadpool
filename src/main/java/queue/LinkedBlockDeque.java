@@ -3,19 +3,22 @@
  */
 package queue;
 
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
+
 
 /**
  * @author mujjiang
  * 
  */
-public class LinkedBlockDeque<U> {
+public class LinkedBlockDeque<U> implements Queue<U>{
+	
 
+	 private static Logger logger = Logger.getLogger("queue.LinkedBlockDeque");  
+	
+	
 	private volatile int capacity = 0; // 队列容量,默认为0，如果为0，则表示大小没有限制
 
 	private volatile int size = 0;
@@ -54,7 +57,7 @@ public class LinkedBlockDeque<U> {
 
 		@Override
 		public String toString() {
-			return "Node [" + (u != null ? "u=" + u + ", " : "") + "]";
+			return "Node [ u=" + u +  ")]";
 		}
 
 	}
@@ -103,6 +106,9 @@ public class LinkedBlockDeque<U> {
 	 */
 	public void addFirst(U u) {
 
+		// 判断容量是否超限制
+		
+		checkArg(u);
 		lock.lock();
 
 		while (this.size >= capacity) {
@@ -113,16 +119,15 @@ public class LinkedBlockDeque<U> {
 			}
 		}
 
-		// 判断容量是否超限制
-
-		checkArg(u);
 		// 新建要插入的结点
 
 		Node<U> node = new Node<U>(u);
 
 		addHead(node);
-
+		
 		this.size++;
+
+		logger.info("LinkedBlockDeque first add element:"+node+",\tblocksize:"+this.size);
 
 		emptyCondition.signalAll();
 
@@ -143,9 +148,10 @@ public class LinkedBlockDeque<U> {
 	 */
 	public void addLast(U u) {
 
+		checkArg(u);
 		lock.lock();
 
-		while (this.size > capacity) {
+		while (this.size >= capacity) {
 			try {
 				emptyCondition.await();
 			} catch (InterruptedException e) {
@@ -153,12 +159,14 @@ public class LinkedBlockDeque<U> {
 			}
 		}
 
-		checkArg(u);
 		Node<U> node = new Node<U>(u);
 		addlast(node);
 
 		this.size++;
-
+		
+		logger.info("LinkedBlockDeque last add element:"+node+",\tblocksize:"+this.size);
+		
+		
 		emptyCondition.signal();
 
 		lock.unlock();
@@ -209,8 +217,11 @@ public class LinkedBlockDeque<U> {
 		} else {
 			this.head = null;
 		}
-
+		
 		size--;
+
+		logger.info("LinkedBlockDeque poll first element:"+deleteNode+",\tblocksize:"+this.size);
+		
 
 		fullCondition.signal();
 		lock.unlock();
@@ -244,6 +255,8 @@ public class LinkedBlockDeque<U> {
 			this.tail = this.tail.prev;
 		}
 
+		logger.info("LinkedBlockDeque poll last element:"+deleteNode+",\tblocksize:"+this.size);
+		
 		size--;
 
 		fullCondition.signal(); // 唤醒其他线程
