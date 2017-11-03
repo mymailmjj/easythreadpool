@@ -26,7 +26,7 @@ public class Main {
 
 		System.out.println(i);
 
-		newFixedPoolExecutors.destroy();
+		newFixedPoolExecutors.shutdown();
 
 	}
 

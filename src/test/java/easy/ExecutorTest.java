@@ -27,7 +27,7 @@ public class ExecutorTest {
 		}
 		
 		
-		defaultThreadPool.destroy();
+		defaultThreadPool.shutdown();
 		
 	}
 

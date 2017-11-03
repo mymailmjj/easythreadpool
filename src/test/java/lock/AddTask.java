@@ -31,8 +31,10 @@ public class AddTask implements Task {
 		lock.lock();
 		
 		if(i < 20){
+			System.out.println("i+=:"+i);
 			add();
 		}else{
+			System.out.println("i-=:"+i);
 			sub();
 		}
 		

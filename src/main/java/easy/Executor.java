@@ -12,7 +12,7 @@ public interface Executor {
 	
 	public void execute(Task run);
 	
-	public void destroy();
+	public void shutdown();
 	
 	public int getTaskNum();   //获取线程数量
 
