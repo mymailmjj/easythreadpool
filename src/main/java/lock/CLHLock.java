@@ -6,6 +6,7 @@ package lock;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * 模拟java api使用CLH队列的lock锁
  * @author mujjiang
  * 
  */

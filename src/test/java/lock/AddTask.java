@@ -3,11 +3,13 @@
  */
 package lock;
 
+import easy.Task;
+
 /**
  * @author mujjiang
  *
  */
-public class AddTask implements Runnable {
+public class AddTask implements Task {
 	
 	private Lock lock = new CLHLock();
 	

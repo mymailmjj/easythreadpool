@@ -8,16 +8,19 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 /**
  * @author mymai
- *
+ * 
  */
 public class DefaultThreadPool implements Executor {
 
+	private static Logger logger = Logger.getLogger("DefaultThreadPool");
+
 	// 任务的容器
 	private LinkedBlockingDeque<Task> queureTask = new LinkedBlockingDeque<Task>();
-	
+
 	private CopyOnWriteArraySet<WorkThread> workThreads;
 
 	// 线程的状态
@@ -42,35 +45,34 @@ public class DefaultThreadPool implements Executor {
 		if (poolSize < 0) {
 			poolSize = DEFAULT_POOL_SIZE;
 		}
-		
+
 		if (maxPoolSize < 0) {
 			maxPoolSize = DEFAULT_POOL_SIZE;
 		}
 
 		this.poolSize = poolSize;
-		
+
 		this.maxPoolSize = maxPoolSize;
 
 		workThread = new ArrayList<WorkThread>();
-		
+
 		workThreads = new CopyOnWriteArraySet<WorkThread>();
 
 		initPool();
 
 	}
-	
-	private void enlargeThreadPool(){
+
+	private void enlargeThreadPool() {
 		System.out.println("enlargeThreadPool");
 		int enlargeSize = maxPoolSize - poolSize;
 		for (int i = 0; i < enlargeSize; i++) {
-			WorkThread workThread2 = new WorkThread("线程" + (this.poolSize+i));
+			WorkThread workThread2 = new WorkThread("线程" + (this.poolSize + i));
 			workThread.add(workThread2);
 			workThread2.start();
 		}
-		
-		
+
 		this.poolSize = this.maxPoolSize;
-		
+
 	}
 
 	private void initPool() {
@@ -92,9 +94,8 @@ public class DefaultThreadPool implements Executor {
 	 * @see easy.Executor#execute(java.lang.Runnable)
 	 */
 	public void execute(Task run) {
-			queureTask.addFirst(run);
-			tasknum.incrementAndGet();
-			System.out.println("当前线程数量："+getTaskNum());
+		queureTask.addFirst(run);
+		tasknum.incrementAndGet();
 	}
 
 	class WorkThread extends Thread {
@@ -109,18 +110,23 @@ public class DefaultThreadPool implements Executor {
 				running = true;
 			}
 
-				while (running) {
+			while (running) {
+
+				synchronized (queureTask) {
+
 					if (!queureTask.isEmpty()) {
 						Task pollLast = queureTask.pollLast();
 						pollLast.run();
 						tasknum.decrementAndGet();
 					}
-					
-					//这里放大线程数量
-					if((getTaskNum()>poolSize)&&(poolSize< maxPoolSize)){
+
+					// 这里放大线程数量
+					if ((getTaskNum() > poolSize) && (poolSize < maxPoolSize)) {
 						enlargeThreadPool();
 					}
 				}
+
+			}
 
 		}
 
