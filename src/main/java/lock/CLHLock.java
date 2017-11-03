@@ -15,7 +15,7 @@ public class CLHLock implements Lock {
 
 	ThreadLocal<QNode> mynode = null; // 当前结点
 
-	ThreadLocal<QNode> mypred = null; // 前一个结点的链接
+	ThreadLocal<QNode> mypred = null; // 前一个结点的链接T
 
 	public CLHLock() {
 		atomicReference = new AtomicReference<CLHLock.QNode>(new QNode());
