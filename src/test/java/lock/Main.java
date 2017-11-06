@@ -3,9 +3,6 @@
  */
 package lock;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import easy.Executor;
 import easy.Executors;
 

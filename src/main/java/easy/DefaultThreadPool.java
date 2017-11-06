@@ -3,6 +3,7 @@
  */
 package easy;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -11,20 +12,38 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
+import exception.IllegalStatusException;
 import queue.LinkedBlockDeque;
 import queue.Queue;
 
 /**
  * 目前存在的问题
  * 1.线程运行不均
- * 2.异常处理
  * 3.精细化操作(可以对任务进行单独测试)
  * @author mujianjiang
  * 
  */
 public class DefaultThreadPool implements Executor {
-
+	
 	private static Logger logger = Logger.getLogger("DefaultThreadPool");
+	/**
+	 *默认的异常处理器
+	 * @author mujjiang
+	 *
+	 */
+	private class DefaultExecpetionHandler implements UncaughtExceptionHandler{
+
+		public void uncaughtException(Thread t, Throwable e) {
+			logger.warning("线程t"+t.getName()+"发生异常,抛出的异常:"+e.getMessage());
+		}
+		
+	}
+	
+	/**
+	 * 默认的异常处理器
+	 */
+	private UncaughtExceptionHandler uncaughtExceptionHandler = new DefaultExecpetionHandler();
+	
 	
 	// 任务的容器
 	private Queue<Task> queureTask;
@@ -98,7 +117,9 @@ public class DefaultThreadPool implements Executor {
 		for (int i = 0; i < poolSize; i++) {
 			String threadname = "线程" + i;
 			logger.info("添加线程:" + threadname);
-			workThread.add(new WorkThread(threadname));
+			WorkThread workThread2 = new WorkThread(threadname);
+			workThread.add(workThread2);
+			workThread2.setUncaughtExceptionHandler(uncaughtExceptionHandler);
 		}
 
 		for (int i = 0; i < workThread.size(); i++) {
@@ -109,6 +130,17 @@ public class DefaultThreadPool implements Executor {
 
 	}
 
+	public UncaughtExceptionHandler getUncaughtExceptionHandler() {
+		return uncaughtExceptionHandler;
+	}
+
+	public void setUncaughtExceptionHandler(
+			UncaughtExceptionHandler uncaughtExceptionHandler) {
+		this.uncaughtExceptionHandler = uncaughtExceptionHandler;
+	}
+
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -116,6 +148,7 @@ public class DefaultThreadPool implements Executor {
 	 */
 	public void execute(Task run) {
 		logger.info("添加任务：" + run);
+		run.init();  //初始化任务 
 		queureTask.addFirst(run);
 		tasknum.incrementAndGet();
 	}
@@ -145,7 +178,7 @@ public class DefaultThreadPool implements Executor {
 					Task pollLast = queureTask.pollLast();
 					logger.info(Thread.currentThread().getName()
 							+ "获得锁，执行task:" + pollLast);
-					pollLast.run();
+					pollLast.runTask();
 					tasknum.decrementAndGet();
 				}
 
@@ -157,10 +190,11 @@ public class DefaultThreadPool implements Executor {
 				}
 
 			}
-
 		}
 
 	}
+	
+	
 
 	public void shutdown() {
 
@@ -176,7 +210,39 @@ public class DefaultThreadPool implements Executor {
 
 		workThread = null;
 	}
+	
+	/**
+	 * 尝试删除某个任务
+	 * @param t
+	 */
+	public void tryRemoveTask(Task t){
+		checkTaskStatus(t);
+		
+		
+		
+		
+		
+		
+	}
+	
+	/**
+	 * 检查任务的当前执行状态
+	 * 在运行，返回true
+	 * 否则，返回false
+	 * @param t
+	 */
+	private void checkTaskStatus(Task t){
+		boolean r = t.isRunning();
+		if(r){
+			throw new IllegalStatusException();
+		}
+	}
 
+	/*
+	 * 获取当前的线程数量
+	 *  (non-Javadoc)
+	 * @see easy.Executor#getTaskNum()
+	 */
 	public int getTaskNum() {
 		return tasknum.get();
 	}

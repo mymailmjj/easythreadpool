@@ -3,13 +3,19 @@
  */
 package lock;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+
 import easy.Task;
 
 /**
  * @author mujjiang
  *
  */
-public class AddTask implements Task {
+public class AddTask extends Task {
 	
 	private Lock lock = new CLHLock();
 	
@@ -31,6 +37,16 @@ public class AddTask implements Task {
 	public void run() {
 		
 		lock.lock();
+		
+		if(i==7){
+			int j = 2/0;
+			
+			/*try {
+				FileReader reader = new FileReader(new File("c://logs"));
+			} catch (FileNotFoundException e) {
+				throw e;
+			}*/
+		}
 		
 		if(i < 20){
 			System.out.println(Thread.currentThread().getName()+"\ti+=:"+i);
