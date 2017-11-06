@@ -8,17 +8,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
-
 /**
  * @author mujjiang
  * 
  */
-public class LinkedBlockDeque<U> implements Queue<U>{
-	
+public class LinkedBlockDeque<U> implements Queue<U> {
 
-	 private static Logger logger = Logger.getLogger("queue.LinkedBlockDeque");  
-	
-	
+	private static Logger logger = Logger.getLogger("queue.LinkedBlockDeque");
+
 	private volatile int capacity = 0; // 队列容量,默认为0，如果为0，则表示大小没有限制
 
 	private volatile int size = 0;
@@ -35,6 +32,10 @@ public class LinkedBlockDeque<U> implements Queue<U>{
 
 	public LinkedBlockDeque(int capacity) {
 		this.capacity = capacity;
+	}
+
+	public LinkedBlockDeque() {
+		this(Integer.MAX_VALUE);
 	}
 
 	final static class Node<U> {
@@ -57,7 +58,7 @@ public class LinkedBlockDeque<U> implements Queue<U>{
 
 		@Override
 		public String toString() {
-			return "Node [ u=" + u +  ")]";
+			return "Node [ u=" + u + ")]";
 		}
 
 	}
@@ -107,7 +108,7 @@ public class LinkedBlockDeque<U> implements Queue<U>{
 	public void addFirst(U u) {
 
 		// 判断容量是否超限制
-		
+
 		checkArg(u);
 		lock.lock();
 
@@ -124,10 +125,11 @@ public class LinkedBlockDeque<U> implements Queue<U>{
 		Node<U> node = new Node<U>(u);
 
 		addHead(node);
-		
+
 		this.size++;
 
-		logger.info("LinkedBlockDeque first add element:"+node+",\tblocksize:"+this.size);
+		logger.info("LinkedBlockDeque first add element:" + node
+				+ ",\tblocksize:" + this.size);
 
 		emptyCondition.signalAll();
 
@@ -163,10 +165,10 @@ public class LinkedBlockDeque<U> implements Queue<U>{
 		addlast(node);
 
 		this.size++;
-		
-		logger.info("LinkedBlockDeque last add element:"+node+",\tblocksize:"+this.size);
-		
-		
+
+		logger.info("LinkedBlockDeque last add element:" + node
+				+ ",\tblocksize:" + this.size);
+
 		emptyCondition.signal();
 
 		lock.unlock();
@@ -217,11 +219,11 @@ public class LinkedBlockDeque<U> implements Queue<U>{
 		} else {
 			this.head = null;
 		}
-		
+
 		size--;
 
-		logger.info("LinkedBlockDeque poll first element:"+deleteNode+",\tblocksize:"+this.size);
-		
+		logger.info("LinkedBlockDeque poll first element:" + deleteNode
+				+ ",\tblocksize:" + this.size);
 
 		fullCondition.signal();
 		lock.unlock();
@@ -255,8 +257,9 @@ public class LinkedBlockDeque<U> implements Queue<U>{
 			this.tail = this.tail.prev;
 		}
 
-		logger.info("LinkedBlockDeque poll last element:"+deleteNode+",\tblocksize:"+this.size);
-		
+		logger.info("LinkedBlockDeque poll last element:" + deleteNode
+				+ ",\tblocksize:" + this.size);
+
 		size--;
 
 		fullCondition.signal(); // 唤醒其他线程
@@ -283,5 +286,9 @@ public class LinkedBlockDeque<U> implements Queue<U>{
 	public U peekLast() {
 		return this.tail.u;
 	}
-	
+
+	public boolean isEmpty() {
+		return this.size==0;
+	}
+
 }

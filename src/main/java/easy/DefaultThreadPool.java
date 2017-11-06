@@ -6,22 +6,28 @@ package easy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
+import queue.LinkedBlockDeque;
+import queue.Queue;
+
 /**
- * @author mymai
+ * 目前存在的问题
+ * 1.线程运行不均
+ * 2.异常处理
+ * 3.精细化操作(可以对任务进行单独测试)
+ * @author mujianjiang
  * 
  */
 public class DefaultThreadPool implements Executor {
 
 	private static Logger logger = Logger.getLogger("DefaultThreadPool");
-
+	
 	// 任务的容器
-	private LinkedBlockingDeque<Task> queureTask = new LinkedBlockingDeque<Task>();
+	private Queue<Task> queureTask;
 
 	private CopyOnWriteArraySet<WorkThread> workThreads;
 
@@ -44,8 +50,12 @@ public class DefaultThreadPool implements Executor {
 	public DefaultThreadPool() {
 		this(DEFAULT_POOL_SIZE, DEFAULT_POOL_SIZE);
 	}
-
-	public DefaultThreadPool(int poolSize, int maxPoolSize) {
+	
+	public DefaultThreadPool(int poolSize, int maxPoolSize){
+		this(poolSize, maxPoolSize,new LinkedBlockDeque<Task>());
+	}
+	
+	public DefaultThreadPool(int poolSize, int maxPoolSize,Queue<Task> queue) {
 		if (poolSize < 0) {
 			poolSize = DEFAULT_POOL_SIZE;
 		}
@@ -61,6 +71,8 @@ public class DefaultThreadPool implements Executor {
 		workThread = new ArrayList<WorkThread>();
 
 		workThreads = new CopyOnWriteArraySet<WorkThread>();
+		
+		this.queureTask = queue;
 
 		initPool();
 
@@ -152,7 +164,7 @@ public class DefaultThreadPool implements Executor {
 
 	public void shutdown() {
 
-		while (queureTask.size() > 0) {
+		while (!queureTask.isEmpty()) {
 			try {
 				Thread.sleep(300);
 			} catch (InterruptedException e) {

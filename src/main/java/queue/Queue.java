@@ -32,4 +32,11 @@ public interface Queue<U> {
 	 */
 	public U pollLast();
 	
+	
+	/**
+	 * 是否为空
+	 * @return
+	 */
+	public boolean isEmpty();
+	
 }

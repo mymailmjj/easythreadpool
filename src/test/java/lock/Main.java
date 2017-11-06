@@ -3,6 +3,9 @@
  */
 package lock;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import easy.Executor;
 import easy.Executors;
 
@@ -14,6 +17,7 @@ public class Main {
 
 	public static void main(String[] args) {
 
+		
 		Executor newFixedPoolExecutors = Executors.newFixedPoolExecutors(5);
 
 		AddTask addTask = new AddTask(0);
@@ -27,6 +31,30 @@ public class Main {
 		System.out.println(i);
 
 		newFixedPoolExecutors.shutdown();
+		
+		
+		
+		
+	/*	ExecutorService newFixedThreadPool = java.util.concurrent.Executors.newFixedThreadPool(2);
+
+		AddTask addTask = new AddTask(0);
+
+		for (int i = 0; i < 5; i++) {
+			newFixedThreadPool.execute(addTask);
+		}
+		
+		try {
+			newFixedThreadPool.awaitTermination(2, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		int i = addTask.get();
+
+		System.out.println("结果:"+i);
+
+		newFixedThreadPool.shutdown();*/
+		
 
 	}
 

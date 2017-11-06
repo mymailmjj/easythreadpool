@@ -13,6 +13,8 @@ public class AddTask implements Task {
 	
 	private Lock lock = new CLHLock();
 	
+//	private java.util.concurrent.locks.Lock lock = new ReentrantLock();
+	
 	private volatile int i;
 	
 	public AddTask(int i) {
@@ -31,10 +33,10 @@ public class AddTask implements Task {
 		lock.lock();
 		
 		if(i < 20){
-			System.out.println("i+=:"+i);
+			System.out.println(Thread.currentThread().getName()+"\ti+=:"+i);
 			add();
 		}else{
-			System.out.println("i-=:"+i);
+			System.out.println(Thread.currentThread().getName()+"\ti-=:"+i);
 			sub();
 		}
 		
