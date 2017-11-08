@@ -178,7 +178,7 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 	/**
 	 * 打印遍历所有的变量
 	 */
-	private void printAll() {
+	public void printAll() {
 
 		if (this.head == null)
 			return;
@@ -291,4 +291,42 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 		return this.size==0;
 	}
 
+	
+	/**
+	 * 删除某个任务
+	 * @param u
+	 * @return
+	 */
+	public boolean removeTaskWithoutLock(U u){
+		Node temp = this.head;
+		
+		while(temp!=null){
+			
+			if(temp.u.equals(u)){
+				
+				//deal with tail problem
+				if(temp.next==null){
+					this.tail = this.tail.prev;
+					this.tail.next = null;
+					break;
+				}
+				
+				if(temp.prev == null){
+					this.head = this.head.next;
+					this.head.prev = null;
+					break;
+				}
+				
+				temp.next.prev = temp.prev;
+				temp.prev.next = temp.next;
+				break;
+			}
+			
+			temp = temp.next;
+			
+		}
+		
+		return Boolean.TRUE;
+	}
+	
 }
