@@ -216,12 +216,14 @@ public class DefaultThreadPool implements Executor {
 	 * @param t
 	 */
 	public void tryRemoveTask(Task t){
+		this.logger.info("try to remove task t:"+t);
 		checkTaskStatus(t);
 		
+		//if task check success,to delete below
 		
+		queureTask.removeTaskWithoutLock(t);
 		
-		
-		
+		this.logger.info("try to remove task t:"+t+" end");
 		
 	}
 	
@@ -233,8 +235,8 @@ public class DefaultThreadPool implements Executor {
 	 */
 	private void checkTaskStatus(Task t){
 		boolean r = t.isRunning();
-		if(r){
-			throw new IllegalStatusException();
+		if(r){ //如果程序已经运行则抛出异常
+			throw new IllegalStatusException("Task is running");
 		}
 	}
 

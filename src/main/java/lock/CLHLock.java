@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 /**
  * 模拟java api使用CLH队列的lock锁
+ * 自旋锁实现
  * 
  * @author mujjiang
  * 
