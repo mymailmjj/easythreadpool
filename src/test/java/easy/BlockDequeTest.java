@@ -3,9 +3,12 @@
  */
 package easy;
 
+import java.util.Iterator;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.Test;
 
 import queue.LinkedBlockDeque;
 
@@ -14,6 +17,25 @@ import queue.LinkedBlockDeque;
  * 
  */
 public class BlockDequeTest {
+	
+	final LinkedBlockDeque<String> queues = new LinkedBlockDeque<String>(10);
+	
+	@ Test
+	public void testQueueRemoveWithoutLock(){
+		
+		for(int i = 0; i< 10;i++){
+			queues.addFirst("str"+i);
+		}
+		
+		queues.printAll();
+		
+		boolean removeTaskWithoutLock = queues.removeTaskWithoutLock("str5");
+		
+		System.out.println("------------------------------------");
+		
+		queues.printAll();
+		
+	}
 
 	public static void main(String[] args) {
 
