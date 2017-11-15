@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 /**
+ * 自旋锁类型
+ * 
  * 模拟java api使用CLH队列的lock锁
  * 
  * @author mujjiang
