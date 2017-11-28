@@ -111,7 +111,11 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 
 		checkArg(u);
 		lock.lock();
+		
+		Thread currentThread = Thread.currentThread();
 
+		logger.info("线程名:"+currentThread.getName()+"addFirst加锁");
+		
 		while (this.size >= capacity) {
 			try {
 				fullCondition.await();
@@ -134,6 +138,9 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 		emptyCondition.signalAll();
 
 		lock.unlock();
+		
+		logger.info("线程名:"+currentThread.getName()+"addFirst释放锁");
+		
 
 	}
 
@@ -177,6 +184,7 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 
 	/**
 	 * 打印遍历所有的变量
+	 * 测试使用
 	 */
 	private void printAll() {
 
@@ -239,7 +247,11 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 	public U pollLast() {
 
 		lock.lock();
-
+		
+		Thread currentThread = Thread.currentThread();
+		
+		logger.info("线程名:"+currentThread.getName()+"pollLast加锁");
+		
 		while (size <= 0) {
 			try {
 				emptyCondition.awaitNanos(2);
@@ -265,6 +277,8 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 		fullCondition.signal(); // 唤醒其他线程
 
 		lock.unlock();
+		
+		logger.info("线程名:"+currentThread.getName()+"pollLast释放锁");
 
 		return deleteNode.u;
 	}
@@ -289,6 +303,56 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 
 	public boolean isEmpty() {
 		return this.size==0;
+	}
+	
+	/**
+	 * 
+	 * @param u
+	 * @return
+	 */
+	private Node find(U u){
+		if (this.head == null)
+			return null;
+
+		Node<U> temp = this.head;
+
+		while (temp != null) {
+			if(temp.u.equals(u)){
+				return temp;
+			}
+			temp = temp.next;
+		}
+		
+		return temp;
+	}
+
+	/**
+	 * 非线程安全，使用前应该检查任务状态
+	 * 删除某个元素，从队列中
+	 */
+	public boolean remove(U u) {
+		
+		Node node = find(u);
+		
+		//判断首节点的情况
+		if(node.prev==null){
+			node.next.prev = null;
+			this.head = node.next;
+			return true;
+		}
+		
+		//判断末尾结点的情况
+		if(node.next == null){
+			node.prev.next = null;
+			this.tail = node;
+			return true;
+		}
+
+		node.next.prev = node.prev;
+		
+		node.prev.next = node.next;
+		
+		return true;
 	}
 
 }

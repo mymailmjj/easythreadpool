@@ -39,4 +39,12 @@ public interface Queue<U> {
 	 */
 	public boolean isEmpty();
 	
+	
+	/**
+	 * 删除某个任务
+	 * @param u
+	 * @return
+	 */
+	public boolean remove(U u);
+	
 }

@@ -175,30 +175,33 @@ public class DefaultThreadPool implements Executor {
 				running = true;
 			}
 
+			/*logger.info(Thread.currentThread().getName()
+					+ "\tstart");*/
+			
 			while (running) {
-
-				lock.lock();
 				if (!queureTask.isEmpty()) {
 					Task pollLast = queureTask.pollLast();
-					logger.info(Thread.currentThread().getName()
-							+ "获得锁，执行task:" + pollLast);
+					/*logger.info(Thread.currentThread().getName()
+							+ "执行task:" + pollLast);*/
 					pollLast.runTask();
 					tasknum.decrementAndGet();
 				}
-
-				lock.unlock();
-
 				// 这里放大线程数量
 				if ((getTaskNum() > poolSize) && (poolSize < maxPoolSize)) {
 					enlargeThreadPool();
 				}
-
+				
+				/*logger.info(Thread.currentThread().getName()
+						+ "running="+running);*/
+				
 			}
+			
+		/*	logger.info(Thread.currentThread().getName()
+					+ "\tend");
+			*/
 		}
 
 	}
-	
-	
 
 	public void shutdown() {
 
@@ -210,6 +213,8 @@ public class DefaultThreadPool implements Executor {
 			}
 		}
 
+		System.out.println("线程关闭");
+		
 		running = false;
 
 		workThread = null;
@@ -222,10 +227,8 @@ public class DefaultThreadPool implements Executor {
 	public void tryRemoveTask(Task t){
 		checkTaskStatus(t);
 		
-		
-		
-		
-		
+		//这里的方法是非线程安全的
+		this.queureTask.remove(t);
 		
 	}
 	
