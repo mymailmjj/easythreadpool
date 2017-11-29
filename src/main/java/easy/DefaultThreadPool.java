@@ -143,8 +143,6 @@ public class DefaultThreadPool implements Executor {
 		this.uncaughtExceptionHandler = uncaughtExceptionHandler;
 	}
 
-	
-	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -175,9 +173,6 @@ public class DefaultThreadPool implements Executor {
 				running = true;
 			}
 
-			/*logger.info(Thread.currentThread().getName()
-					+ "\tstart");*/
-			
 			while (running) {
 				if (!queureTask.isEmpty()) {
 					Task pollLast = getTask();
@@ -191,37 +186,33 @@ public class DefaultThreadPool implements Executor {
 					enlargeThreadPool();
 				}
 				
-				/*logger.info(Thread.currentThread().getName()
-						+ "running="+running);*/
-				
 			}
 			
-		/*	logger.info(Thread.currentThread().getName()
-					+ "\tend");
-			*/
 		}
 
 	}
 	
 	
+	/**
+	 * 获取线程的方法，这里获取的线程的时候，任务池获取的时候，考虑阻塞和非阻塞的两种区别
+	 * queue的poll方法不阻塞
+	 * queue的take方法会阻塞，这里使用take方法的时候会有问题
+	 * @return
+	 */
 	private Task getTask(){
 		
 		for(;;){
-			
 			Task pollLast = null;
-			
 			//判断当前线程的状态，如果不在运行了，就结束
 			if(!running) return null;
 			
-			if(tasknum.get()!=0&&(pollLast = queureTask.taskLast())!=null){
+			if(tasknum.get()!=0&&(pollLast = queureTask.pollLast())!=null){
 				tasknum.decrementAndGet();
 				return pollLast;
 			}
 		}
 		
 	}
-	
-	
 	
 
 	public void shutdown() {
@@ -247,8 +238,9 @@ public class DefaultThreadPool implements Executor {
 	 * @param t
 	 */
 	public void tryRemoveTask(Task t){
-		this.logger.info("try to remove task t:"+t);
 		checkTaskStatus(t);
+		
+		logger.info("try to remove task t:"+t);
 		
 		//这里的方法是非线程安全的
 		this.queureTask.remove(t);
@@ -256,7 +248,7 @@ public class DefaultThreadPool implements Executor {
 		
 		queureTask.removeTaskWithoutLock(t);
 		
-		this.logger.info("try to remove task t:"+t+" end");
+		logger.info("try to remove task t:"+t+" end");
 		
 	}
 	
