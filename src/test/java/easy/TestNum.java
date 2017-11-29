@@ -17,6 +17,10 @@ public class TestNum {
 	public void addNum(){
 		i++;
 	}
+	
+	public void subNum(){
+		i--;
+	}
 
 	public int getI() {
 		return i;

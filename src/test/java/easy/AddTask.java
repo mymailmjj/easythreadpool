@@ -18,10 +18,11 @@ public class AddTask extends Task {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see java.lang.Runnable#run()
+	 * @see java.lang.Runnable#run()s
 	 */
 	public void run() {
 		testNum.addNum();
+		System.out.println(Thread.currentThread().getName()+"线程增加1:"+testNum.getI());
 	}
 
 }
