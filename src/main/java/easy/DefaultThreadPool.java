@@ -275,7 +275,6 @@ public class DefaultThreadPool implements Executor {
 	}
 
 	/*
-	 *  这里测试版本工具
 	 * 获取当前的线程数量
 	 *  (non-Javadoc)
 	 * @see easy.Executor#getTaskNum()
