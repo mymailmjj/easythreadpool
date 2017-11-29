@@ -26,8 +26,27 @@ public abstract class Task implements Runnable{
 	
 	private final static int STOP = 1 << 4;  //1000
 	
-	protected int id;
+	protected int id;    //taskid each task has the only one id
 	
+	protected String name;   //taskname each task has the only name
+	
+	public Task(){
+		
+	}
+	
+	public Task(int id) {  //support three constructor
+		this.id = id;
+	}
+	
+	public Task(String name) {
+		this.name = name;
+	}
+	
+	public Task(int id, String name) {
+		this.id = id;
+		this.name = name;
+	}
+
 	public void init(){
 		status = READY;
 	}
@@ -44,12 +63,18 @@ public abstract class Task implements Runnable{
 		this.status = status;
 	}
 
+	/**
+	 * 
+	 * letsub task to implement
+	 */
 	protected void beforeRun(){
-		status = START;
 	}
 	
+	/**
+	 * letsub task to implement
+	 * 
+	 */
 	protected void afterRun(){
-		
 	}
 	
 	/**
@@ -63,5 +88,44 @@ public abstract class Task implements Runnable{
 		afterRun();
 		setStatus(STOP);
 	}
+
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int hashCode() {
+		if(this.name!=null){
+			int sum = 0;
+			char[] charArray = this.name.toCharArray();
+			for (int i = 0; i < charArray.length; i++) {
+				char c = charArray[i];
+				sum += c;
+			}
+		}
+		return id;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj==null) return false;
+		if(obj==this) return true;
+		if(obj instanceof Task){
+			Task o = (Task)obj;
+			if(this.name!=null){
+				return o.name.equals(this.name);
+			}else{
+				return o.id == this.id;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public String toString() {
+		return "Task [status=" + status + ", id=" + id + ", name=" + name + "]";
+	}
+
 	
 }

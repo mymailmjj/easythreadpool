@@ -427,4 +427,42 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 		return null;
 	}
 
+	
+	/**
+	 * 删除某个任务
+	 * @param u
+	 * @return
+	 */
+	public boolean removeTaskWithoutLock(U u){
+		Node temp = this.head;
+		
+		while(temp!=null){
+			
+			if(temp.u.equals(u)){
+				
+				//deal with tail problem
+				if(temp.next==null){
+					this.tail = this.tail.prev;
+					this.tail.next = null;
+					break;
+				}
+				
+				if(temp.prev == null){
+					this.head = this.head.next;
+					this.head.prev = null;
+					break;
+				}
+				
+				temp.next.prev = temp.prev;
+				temp.prev.next = temp.next;
+				break;
+			}
+			
+			temp = temp.next;
+			
+		}
+		
+		return Boolean.TRUE;
+	}
+	
 }

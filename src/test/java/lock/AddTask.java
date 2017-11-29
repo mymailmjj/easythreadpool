@@ -24,6 +24,7 @@ public class AddTask extends Task {
 	private volatile int i;
 	
 	public AddTask(int i) {
+		super(i);
 		this.i = i;
 	}
 

@@ -73,4 +73,8 @@ public interface Queue<U> {
 	 */
 	public boolean remove(U u);
 
+	
+	
+	public boolean removeTaskWithoutLock(U u);
+	
 }
