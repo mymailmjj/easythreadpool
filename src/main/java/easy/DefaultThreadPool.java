@@ -153,7 +153,7 @@ public class DefaultThreadPool implements Executor {
 	public void execute(Task run) {
 		logger.info("添加任务：" + run);
 		run.init();  //初始化任务 
-		queureTask.addFirst(run);
+		queureTask.offerFirst(run);   
 		tasknum.incrementAndGet();
 	}
 
@@ -180,11 +180,11 @@ public class DefaultThreadPool implements Executor {
 			
 			while (running) {
 				if (!queureTask.isEmpty()) {
-					Task pollLast = queureTask.pollLast();
-					/*logger.info(Thread.currentThread().getName()
-							+ "执行task:" + pollLast);*/
-					pollLast.runTask();
-					tasknum.decrementAndGet();
+					Task pollLast = getTask();
+					if(pollLast!=null){
+						pollLast.runTask();
+					}
+					
 				}
 				// 这里放大线程数量
 				if ((getTaskNum() > poolSize) && (poolSize < maxPoolSize)) {
@@ -202,6 +202,27 @@ public class DefaultThreadPool implements Executor {
 		}
 
 	}
+	
+	
+	private Task getTask(){
+		
+		for(;;){
+			
+			Task pollLast = null;
+			
+			//判断当前线程的状态，如果不在运行了，就结束
+			if(!running) return null;
+			
+			if(tasknum.get()!=0&&(pollLast = queureTask.taskLast())!=null){
+				tasknum.decrementAndGet();
+				return pollLast;
+			}
+		}
+		
+	}
+	
+	
+	
 
 	public void shutdown() {
 

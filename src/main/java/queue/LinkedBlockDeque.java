@@ -64,40 +64,117 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 	}
 
 	/**
-	 * 内部方法 头部添加
+	 * 
+	 * 核心头部添加的方法 内部方法 头部添加
 	 * 
 	 * @param node
 	 */
-	private void addHead(Node<U> node) {
+	private boolean linkHead(Node<U> node) {
+
+		if (this.size > this.capacity)
+			return false;
 
 		// 如果头结点为空
 		if (this.head == null) {
 			this.head = node;
 			this.tail = node;
-			return;
+		} else {
+			node.next = this.head;
+			this.head.prev = node;
+			this.head = node;
 		}
 
-		node.next = this.head;
-		this.head.prev = node;
-		this.head = node;
+		this.size++;
+
+		emptyCondition.signal();
+
+		return Boolean.TRUE;
 	}
 
 	/**
-	 * 内部方法 尾部添加
+	 * 核心尾部添加的方法 内部方法 尾部添加
 	 * 
 	 * @param node
 	 */
-	private void addlast(Node<U> node) {
+	private boolean linkLast(Node<U> node) {
+
+		if (this.size > this.capacity)
+			return false;
 
 		if (this.tail == null) {
 			this.tail = node;
 			this.head = node;
-			return;
+		} else {
+			node.prev = this.tail;
+			this.tail.next = node;
+			this.tail = node;
 		}
 
-		node.prev = this.tail;
-		this.tail.next = node;
-		this.tail = node;
+		this.size++;
+
+		emptyCondition.signal();
+
+		return Boolean.TRUE;
+	}
+
+	/**
+	 * 核心头部删除逻辑
+	 * 
+	 * @return
+	 */
+	private Node<U> unlinkHead() {
+
+		Node<U> deleteNode = this.head;
+
+		if (this.head.next != null) {
+			// 删除head，重新置
+			this.head.next.prev = null;
+
+			this.head = this.head.next;
+		} else {
+			this.head = null;
+		}
+
+		size--;
+
+		logger.info("LinkedBlockDeque poll first element:" + deleteNode
+				+ ",\tblocksize:" + this.size);
+
+		fullCondition.signal();
+
+		return deleteNode;
+
+	}
+
+	/**
+	 * 核心尾部删除逻辑
+	 * 
+	 * @return
+	 */
+	private Node<U> unlinkLast() {
+		
+		if(this.size<=0) return null;
+
+		Node<U> deleteNode = this.tail;
+		
+		if(this.tail==null) return null;
+
+		if (this.tail.prev != null) {
+			// 删除head，重新置
+			this.tail.prev.next = null;
+
+			this.tail = this.tail.prev;
+		}
+
+		logger.info("LinkedBlockDeque poll last element:" + deleteNode
+				+ ",\tblocksize:" + this.size);
+
+		size--;
+
+		fullCondition.signal(); // 唤醒其他线程
+
+		return deleteNode;
+
 	}
 
 	/**
@@ -105,42 +182,26 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 	 * 
 	 * @param u
 	 */
-	public void addFirst(U u) {
+	public void offerFirst(U u) {
 
 		// 判断容量是否超限制
 
 		checkArg(u);
 		lock.lock();
-		
+
 		Thread currentThread = Thread.currentThread();
 
-		logger.info("线程名:"+currentThread.getName()+"addFirst加锁");
-		
-		while (this.size >= capacity) {
-			try {
-				fullCondition.await();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		logger.info("线程名:" + currentThread.getName() + "addFirst加锁");
 
 		// 新建要插入的结点
 
 		Node<U> node = new Node<U>(u);
 
-		addHead(node);
-
-		this.size++;
-
-		logger.info("LinkedBlockDeque first add element:" + node
-				+ ",\tblocksize:" + this.size);
-
-		emptyCondition.signalAll();
+		linkHead(node);
 
 		lock.unlock();
-		
-		logger.info("线程名:"+currentThread.getName()+"addFirst释放锁");
-		
+
+		logger.info("线程名:" + currentThread.getName() + "addFirst释放锁");
 
 	}
 
@@ -155,38 +216,29 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 	 * 
 	 * @param u
 	 */
-	public void addLast(U u) {
-
+	public boolean offerLast(U u) {
 		checkArg(u);
+
+		boolean result = Boolean.FALSE;
+
 		lock.lock();
 
-		while (this.size >= capacity) {
-			try {
-				emptyCondition.await();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
 		Node<U> node = new Node<U>(u);
-		addlast(node);
-
-		this.size++;
+		result = linkLast(node);
 
 		logger.info("LinkedBlockDeque last add element:" + node
 				+ ",\tblocksize:" + this.size);
 
-		emptyCondition.signal();
-
 		lock.unlock();
+
+		return result;
 
 	}
 
 	/**
-	 * 打印遍历所有的变量
-	 * 测试使用
+	 * 打印遍历所有的变量 测试使用
 	 */
-	private void printAll() {
+	public void printAll() {
 
 		if (this.head == null)
 			return;
@@ -209,34 +261,11 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 
 		lock.lock();
 
-		while (size <= 0) {
-			try {
-				emptyCondition.awaitNanos(2);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		Node<U> unlinkHead = unlinkHead();
 
-		Node<U> deleteNode = this.head;
-
-		if (this.head.next != null) {
-			// 删除head，重新置
-			this.head.next.prev = null;
-
-			this.head = this.head.next;
-		} else {
-			this.head = null;
-		}
-
-		size--;
-
-		logger.info("LinkedBlockDeque poll first element:" + deleteNode
-				+ ",\tblocksize:" + this.size);
-
-		fullCondition.signal();
 		lock.unlock();
 
-		return deleteNode.u;
+		return unlinkHead==null?null:unlinkHead.u;
 	}
 
 	/**
@@ -247,40 +276,12 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 	public U pollLast() {
 
 		lock.lock();
-		
-		Thread currentThread = Thread.currentThread();
-		
-		logger.info("线程名:"+currentThread.getName()+"pollLast加锁");
-		
-		while (size <= 0) {
-			try {
-				emptyCondition.awaitNanos(2);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
 
-		Node<U> deleteNode = this.tail;
-
-		if (this.tail.prev != null) {
-			// 删除head，重新置
-			this.tail.prev.next = null;
-
-			this.tail = this.tail.prev;
-		}
-
-		logger.info("LinkedBlockDeque poll last element:" + deleteNode
-				+ ",\tblocksize:" + this.size);
-
-		size--;
-
-		fullCondition.signal(); // 唤醒其他线程
+		Node<U> deleteNode = unlinkLast();
 
 		lock.unlock();
-		
-		logger.info("线程名:"+currentThread.getName()+"pollLast释放锁");
 
-		return deleteNode.u;
+		return deleteNode==null?null:deleteNode.u;
 	}
 
 	/**
@@ -302,57 +303,128 @@ public class LinkedBlockDeque<U> implements Queue<U> {
 	}
 
 	public boolean isEmpty() {
-		return this.size==0;
+		return this.size == 0;
 	}
-	
+
 	/**
 	 * 
 	 * @param u
 	 * @return
 	 */
-	private Node find(U u){
+	private Node find(U u) {
 		if (this.head == null)
 			return null;
 
 		Node<U> temp = this.head;
 
 		while (temp != null) {
-			if(temp.u.equals(u)){
+			if (temp.u.equals(u)) {
 				return temp;
 			}
 			temp = temp.next;
 		}
-		
+
 		return temp;
 	}
 
 	/**
-	 * 非线程安全，使用前应该检查任务状态
-	 * 删除某个元素，从队列中
+	 * 非线程安全，使用前应该检查任务状态 删除某个元素，从队列中
 	 */
 	public boolean remove(U u) {
-		
+
 		Node node = find(u);
-		
-		//判断首节点的情况
-		if(node.prev==null){
+
+		// 判断首节点的情况
+		if (node.prev == null) {
 			node.next.prev = null;
 			this.head = node.next;
 			return true;
 		}
-		
-		//判断末尾结点的情况
-		if(node.next == null){
+
+		// 判断末尾结点的情况
+		if (node.next == null) {
 			node.prev.next = null;
 			this.tail = node;
 			return true;
 		}
 
 		node.next.prev = node.prev;
-		
+
 		node.prev.next = node.next;
-		
+
 		return true;
+	}
+
+	public void putFirst(U u) {
+
+		lock.lock();
+
+		Node<U> node = new Node<U>(u);
+
+		try {
+			while (!linkHead(node)) {
+				fullCondition.await();
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	public void putLast(U u) {
+
+		lock.lock();
+
+		try {
+			Node<U> node = new Node<U>(u);
+			while (!linkHead(node)) {
+				emptyCondition.await();
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lock.unlock();
+		}
+
+	}
+
+	public U taskFirst() {
+
+		lock.lock();
+
+		try {
+			Node<U> deletenode;
+			while ((deletenode = unlinkHead()) == null) {
+				emptyCondition.await();
+			}
+			return deletenode.u;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lock.unlock();
+		}
+
+		return null;
+	}
+
+	public U taskLast() {
+
+		lock.lock();
+
+		try {
+			Node<U> deletenode;
+			while ((deletenode = unlinkLast()) == null) {
+				emptyCondition.await();
+			}
+
+			return deletenode.u;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lock.unlock();
+		}
+		return null;
 	}
 
 }
