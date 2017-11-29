@@ -10,9 +10,9 @@ public class ExecutorTest {
 
 		DefaultThreadPool defaultThreadPool = new DefaultThreadPool(5, 30);
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 10; i++) {
 			
-			if(i < 50){
+			if(i < 5){
 				defaultThreadPool.execute(new AddTask(testNum));
 			}else{
 				defaultThreadPool.execute(new SubTask(testNum));
