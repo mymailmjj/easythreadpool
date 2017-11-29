@@ -241,6 +241,7 @@ public class DefaultThreadPool implements Executor {
 		workThread = null;
 	}
 	
+	
 	/**
 	 * 尝试删除某个任务
 	 * @param t
@@ -260,6 +261,7 @@ public class DefaultThreadPool implements Executor {
 	}
 	
 	/**
+	 * 
 	 * 检查任务的当前执行状态
 	 * 在运行，返回true
 	 * 否则，返回false
@@ -273,6 +275,7 @@ public class DefaultThreadPool implements Executor {
 	}
 
 	/*
+	 *  这里测试版本工具
 	 * 获取当前的线程数量
 	 *  (non-Javadoc)
 	 * @see easy.Executor#getTaskNum()
